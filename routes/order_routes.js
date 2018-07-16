@@ -10,13 +10,13 @@ const helper = require('../helpers/helper');
 
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-router.post('/make', /*helper.verifyToken,*/ urlencodedParser, async(req, res, next) => {
+router.post('/make', helper.verifyToken, urlencodedParser, async(req, res, next) => {
     const { userName, productName, qty } = req.body;
     if ( !userName ) {
         return next('user not found');
     }
     if ( !productName ) {
-        return next('user not found');
+        return next('product not found');
     }
     if ( !qty ) {
         return next('quantity not found');

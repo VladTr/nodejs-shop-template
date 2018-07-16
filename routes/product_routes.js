@@ -5,7 +5,7 @@ const Products = require('./../models/product');
 const Categories = require('./../models/category').model;
 const helper = require('../helpers/helper');
 
-router.get('/list', /*helper.verifyToken,*/ async(req, res, next) => {
+router.get('/list', helper.verifyToken, async(req, res, next) => {
     const filter = req.query.productName ? { name: req.query.productName } : {};
     const populateOptions =  req.query.category ? {name: category} : {/*name: 'Category 1'*/};
     const { limit } = req.query || 0;
@@ -29,7 +29,7 @@ router.get('/list', /*helper.verifyToken,*/ async(req, res, next) => {
     }
 });
 
-router.get('/', /*helper.verifyToken,*/ async(req, res, next) => {
+router.get('/', helper.verifyToken, async(req, res, next) => {
     if (!req.query.name) {
         return res.status(400).send({
             success: false,

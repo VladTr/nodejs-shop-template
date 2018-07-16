@@ -16,8 +16,7 @@ const orderSchema = new mongoose.Schema({
 
 orderSchema.statics.createOrdersSet = function createOrdersSet () {
     const yesterday = Date.now()- 24*60*60*1000;
-    //return this.find().populate('product').where('createdAt').gt(yesterday).lt(Date.now());
-    return this.find({});
+    return this.find().populate('product').where('createdAt').gt(yesterday).lt(Date.now());
 };
 
 const Orders = mongoose.model('Orders', orderSchema);

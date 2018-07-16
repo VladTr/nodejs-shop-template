@@ -6,19 +6,49 @@ const fs = require('fs');
 
 const Orders = require('../models/order');
 
+
 const createHtmlReport = () => {
-    return new Promise((resolve, reject) => {
-        resolve('html')
+    return new Promise(async(resolve, reject) => {
+        try {
+            const orders = await Orders.createOrdersSet()
+            let numberOfSoldProducts = 0;
+            let moneyGained = 0;
+            const products = [];
+            orders.forEach( order => {
+                numberOfSoldProducts+=order.qty;
+                moneyGained += order.qty*order.product.price;
+                const productObject = {
+                    name: order.product.name,
+                    qty: order.qty
+                };
+
+                const obj = products.find(function (obj) { return obj.name === order.product.name; });
+                if ( !obj ) {
+                    products.push(productObject);
+                } else {
+                    obj.qty+=order.qty;
+                }
+            });
+            const maxProductSold = products.reduce(function(prev, current) {
+                return (prev.qty > current.qty) ? prev : current
+            });
+            console.log(maxProductSold);
+            resolve(`
+                Number of sold products ${numberOfSoldProducts} pcs.</br> 
+                Money gained ${moneyGained} ninjollars</br>
+                Product which was best selling  yesterday ${maxProductSold.name}
+            `)
+        } catch (err) {
+            reject(err);
+        }
+        
     });
 }
 
-const createPdfReport = () => {
+const createPdfReport = (html) => {
     return new Promise( async(resolve, reject) => {
         const options = { format: 'Letter' };
         try {
-            //const yesterday = Date.now()- 24*60*60*1000;
-            //const orders = await Orders.find();
-            const html = '<h1>hello world</h1>';
             const folder = path.join(__dirname, '..', 'reports');
             const fileName = `report_${Date.now()}.pdf`;
             pdf.create(html, options).toFile(`${folder}/${fileName}`, (err, res) => {
@@ -77,46 +107,45 @@ module.exports = {
      },
 
     sendMailToAdmin: async() => {
-        const html = await createHtmlReport();
-        console.log(html); 
-        const fileName = await createPdfReport();
-        console.log(fileName);
-        //const filePath = path.join(__dirname, '..', 'reports', fileName);
-        //console.log(2, fileName);
+        try {
+            const html = await createHtmlReport();
+            const fileName = await createPdfReport(html);
+            const filePath = path.join(__dirname, '..', 'reports', fileName);
         
-        
-        /*
-        nodemailer.createTestAccount((err, account) => {
-            let transporter = nodemailer.createTransport({
-                host: 'smtp.ethereal.email',
-                port: 587,
-                secure: false, 
-                auth: {
-                    user: account.user, 
-                    pass: account.pass 
-                }
-            });
-            const html = ''
-            const mailOptions = {
-                from: 'test_project_service@gmail.com', 
-                to: 'admin_test_project@gmail.com', 
-                subject: 'Orders report',  
-                html,
-                attachments: [
-                    {
-                        fileName,
-                        path: filePath
+            nodemailer.createTestAccount((err, account) => {
+                let transporter = nodemailer.createTransport({
+                    host: 'smtp.ethereal.email',
+                    port: 587,
+                    secure: false, 
+                    auth: {
+                        user: account.user, 
+                        pass: account.pass 
                     }
-                ]
-            };
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    return console.log(error);
-                }
-                console.log('Message sent: %s', info.messageId);
-                console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+                });
+                const html = ''
+                const mailOptions = {
+                    from: 'test_project_service@gmail.com', 
+                    to: 'admin_test_project@gmail.com', 
+                    subject: 'Orders report',  
+                    html,
+                    attachments: [
+                        {
+                            fileName,
+                            path: filePath
+                        }
+                    ]
+                };
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        return console.log(error);
+                    }
+                    console.log('Message sent: %s', info.messageId);
+                    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+                });
             });
-        });
-        */ 
+        } catch (error) {
+           console.log(error)
+        }
+         
     }
 };
