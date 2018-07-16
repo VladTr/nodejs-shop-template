@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const usersSeed = require('./user_seed');
 const productSeed = require('./product_seed');
 const categorySeed = require('./category_seed');
-const User = require('../models/user');
+const Users = require('../models/user');
 const Products = require('../models/product');
 const Categories = require('../models/category');
 
@@ -24,7 +24,7 @@ const runSeed = async () => {
 
     for (user of usersSeed) {
         const password = crypto.pbkdf2Sync(user.password, 'salt', 100000, 512, 'sha512').toString('hex');
-        const newUser = new User({...user, password});
+        const newUser = new Users({...user, password});
         await newUser.save();
     }
     console.info('users created ....');

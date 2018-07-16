@@ -14,9 +14,13 @@ const productSchema = new mongoose.Schema({
 
 productSchema.index({ 'name': 1});
 
-productSchema.statics.getList = function getList (skip, limit, productName, category) {
-    return this.find().populate({path:'category'}).skip(skip).limit(limit)
-  }
+productSchema.statics.getList = function getList (skip, limit, filter, populateOptions) {
+    return this.find(filter).populate('category', null, populateOptions).skip(skip).limit(limit)
+}
+
+productSchema.statics.getProduct = function getProduct (filter) {
+    return this.findOne(filter).populate('category');
+}
 
 const Products = mongoose.model('Products', productSchema);
 module.exports = Products;

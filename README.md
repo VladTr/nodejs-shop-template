@@ -1,2 +1,0 @@
-# nodejs-shop-template
-tst
